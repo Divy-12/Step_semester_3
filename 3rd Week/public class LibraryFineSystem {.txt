@@ -1,0 +1,69 @@
+public class LibraryFineSystem {
+
+    static class BookIssue {
+        private String title;
+        private String borrowerName;
+        private int daysOverdue;
+
+        public BookIssue(String title, String borrowerName, int daysOverdue) {
+            this.title = title;
+            this.borrowerName = borrowerName;
+            this.daysOverdue = daysOverdue;
+        }
+
+        public double fineAmount() {
+            return daysOverdue > 0 ? daysOverdue * 5.0 : 0.0;
+        }
+
+        public boolean isSeverelyOverdue() {
+            return daysOverdue > 14;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public int getDaysOverdue() {
+            return daysOverdue;
+        }
+
+        /*
+         * ARCHITECTURAL JUSTIFICATION:
+         * 1. 'fineAmount()' is an INSTANCE method because the fine calculation depends 
+         *    directly on the state (daysOverdue) of a specific BookIssue instance.
+         * 2. 'totalFineCollected()' is a STATIC method because calculating the global fine sum 
+         *    operates over a collection of BookIssue objects. It represents a utility operation 
+         *    belonging to the class as a whole, rather than to any individual book instance.
+         */
+        public static double totalFineCollected(BookIssue[] issues) {
+            if (issues == null || issues.length == 0) {
+                return 0.0;
+            }
+            double sum = 0.0;
+            for (BookIssue issue : issues) {
+                if (issue != null) {
+                    sum += issue.fineAmount();
+                }
+            }
+            return sum;
+        }
+    }
+
+    public static void main(String[] args) {
+        BookIssue[] issues = new BookIssue[] {
+            new BookIssue("Clean Code", "Ravi", 18),
+            new BookIssue("Effective Java", "Anitha", 5),
+            new BookIssue("Refactoring", "Karthik", 0),
+            new BookIssue("DSA Handbook", "Meera", 21),
+            new BookIssue("Design Patterns", "Suresh", 9)
+        };
+
+        for (BookIssue issue : issues) {
+            String status = issue.isSeverelyOverdue() ? "Severely overdue" : "OK";
+            System.out.println(issue.getTitle() + " - " + issue.getDaysOverdue() + " days - " + status);
+        }
+
+        double totalFine = BookIssue.totalFineCollected(issues);
+        System.out.println("Total fine collected: Rs " + totalFine);
+    }
+}

@@ -1,0 +1,71 @@
+import java.util.Arrays;
+
+public class FareSplitter {
+    private final String tripId;
+    private final double totalFare;
+    private final int passengerCount;
+
+    // Master Constructor
+    public FareSplitter(String tripId, double totalFare, int passengerCount) {
+        if (tripId == null || tripId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Trip ID cannot be null or empty.");
+        }
+        if (totalFare < 0) {
+            throw new IllegalArgumentException("Total fare cannot be negative.");
+        }
+        if (passengerCount <= 0) {
+            throw new IllegalArgumentException("Passenger count must be greater than zero.");
+        }
+        this.tripId = tripId.trim();
+        this.totalFare = totalFare;
+        this.passengerCount = passengerCount;
+    }
+
+    // Constructor Chaining 1: Default to 2 passengers if count omitted
+    public FareSplitter(String tripId, double totalFare) {
+        this(tripId, totalFare, 2);
+    }
+
+    // Constructor Chaining 2: Provisional split (0 fare, 2 default passengers)
+    public FareSplitter(String tripId) {
+        this(tripId, 0.0, 2);
+    }
+
+    public double[] fareBreakdown() {
+        double[] breakdown = new double[passengerCount];
+        if (totalFare == 0.0) {
+            return breakdown; // Return array of 0.0s
+        }
+
+        // Convert fare to total paise/cents to avoid floating point precision issues
+        long totalPaise = Math.round(totalFare * 100);
+        long baseSharePaise = totalPaise / passengerCount;
+        long remainderPaise = totalPaise % passengerCount;
+
+        for (int i = 0; i < passengerCount; i++) {
+            breakdown[i] = baseSharePaise / 100.0;
+        }
+
+        // Distribute remainder starting from the LAST passenger backward
+        for (int i = 0; i < remainderPaise; i++) {
+            int index = passengerCount - 1 - i;
+            breakdown[index] = Math.round((breakdown[index] + 0.01) * 100.0) / 100.0;
+        }
+
+        return breakdown;
+    }
+
+    public boolean isConfirmationOverdue(int confirmed, int expected) {
+        return confirmed < expected;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("=== Problem 2: Remainder-Fair FareSplitter ===");
+
+        FareSplitter fs1 = new FareSplitter("TRIP001", 100000, 3);
+        System.out.println("TRIP001 (100000 / 3): " + Arrays.toString(fs1.fareBreakdown()));
+
+        FareSplitter fs2 = new FareSplitter("TRIP003");
+        System.out.println("TRIP003 (Provisional): " + Arrays.toString(fs2.fareBreakdown()));
+    }
+}

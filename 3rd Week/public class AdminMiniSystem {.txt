@@ -1,0 +1,119 @@
+public class AdminMiniSystem {
+
+    // Reused Fee & Hostel subclasses
+    static class FeeAccount {
+        private String regNo;
+        private double totalFee;
+        private double amountPaid;
+
+        public FeeAccount(String regNo, double totalFee, double amountPaid) {
+            this.regNo = regNo;
+            this.totalFee = totalFee;
+            this.amountPaid = amountPaid;
+        }
+
+        public void pay(double amount) {
+            if (amount <= 0) {
+                System.out.println("Payment Rejected: Negative or zero amount.");
+                return;
+            }
+            this.amountPaid += amount;
+        }
+
+        public double getDue() {
+            return totalFee - amountPaid;
+        }
+    }
+
+    static class HostelFeeAccount extends FeeAccount {
+        public HostelFeeAccount(String regNo, double totalFee, double amountPaid) {
+            super(regNo, totalFee, amountPaid);
+        }
+    }
+
+    static class HostelRoom {
+        private String roomNo;
+        private int beds;
+        private int occupied;
+
+        public HostelRoom(String roomNo, int beds, int occupied) {
+            this.roomNo = roomNo;
+            this.beds = beds;
+            this.occupied = occupied;
+        }
+
+        public boolean allot() {
+            if (occupied < beds) {
+                occupied++;
+                return true;
+            }
+            return false;
+        }
+
+        public String getRoomNo() {
+            return roomNo;
+        }
+    }
+
+    // Main composite student class
+    static class SrmStudent {
+        private String name;
+        private String regNo;
+        private HostelFeeAccount feeAccount;
+        private HostelRoom room; // Object reference field (Aggregation)
+
+        public static int totalStudents = 0; // Shared static counter
+
+        public SrmStudent(String name, String regNo, HostelFeeAccount feeAccount) {
+            this.name = name;
+            this.regNo = regNo;
+            this.feeAccount = feeAccount;
+            this.room = null; // Unallotted by default
+            totalStudents++;
+        }
+
+        public void assignRoom(HostelRoom room) {
+            if (room != null && room.allot()) {
+                this.room = room;
+            }
+        }
+
+        public HostelFeeAccount getFeeAccount() {
+            return feeAccount;
+        }
+
+        // Null-safe status display method
+        public String fullStatus() {
+            String roomStatus = (room != null) ? room.getRoomNo() : "unallotted";
+            double due = (feeAccount != null) ? feeAccount.getDue() : 0.0;
+            return name + " | Due: Rs " + due + " | Room: " + roomStatus;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Create rooms
+        HostelRoom room1 = new HostelRoom("C-214", 3, 2);
+        HostelRoom room2 = new HostelRoom("C-507", 2, 1);
+
+        // Create 3 students
+        SrmStudent student1 = new SrmStudent("Ravi", "RA2301", new HostelFeeAccount("RA2301", 200000, 60000));
+        SrmStudent student2 = new SrmStudent("Anitha", "RA2302", new HostelFeeAccount("RA2302", 200000, 20000));
+        SrmStudent student3 = new SrmStudent("Karthik", "RA2303", new HostelFeeAccount("RA2303", 200000, 0));
+
+        // Allot rooms to only two students
+        student1.assignRoom(room1);
+        student2.assignRoom(room2);
+        // student3 left intentionally unallotted
+
+        // Process payments (including a rejected negative amount)
+        student1.getFeeAccount().pay(-5000); // Rejected
+        student2.getFeeAccount().pay(0);     // Rejected
+
+        // Print final status lines
+        System.out.println(student1.fullStatus());
+        System.out.println(student2.fullStatus());
+        System.out.println(student3.fullStatus());
+
+        System.out.println("Total students: " + SrmStudent.totalStudents);
+    }
+}

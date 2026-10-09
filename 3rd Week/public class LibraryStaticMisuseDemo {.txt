@@ -1,0 +1,69 @@
+public class LibraryStaticMisuseDemo {
+
+    // --- BROKEN VERSION WITH ALL FIELDS MARKED STATIC ---
+    static class BrokenLibraryMember {
+        static String name;
+        static String memberId;
+        static int booksIssued;
+
+        public BrokenLibraryMember(String name, String memberId, int booksIssued) {
+            BrokenLibraryMember.name = name;
+            BrokenLibraryMember.memberId = memberId;
+            BrokenLibraryMember.booksIssued = booksIssued;
+        }
+
+        public void printName() {
+            System.out.println(name);
+        }
+    }
+
+    // --- CORRECTED VERSION WITH PROPER INSTANCE / STATIC SPLIT ---
+    static class FixedLibraryMember {
+        /*
+         * FIELD BREAKDOWN EXPLANATION:
+         * 1. 'name', 'memberId', 'booksIssued': MUST be INSTANCE fields because every member has 
+         *    their own distinct identity, ID, and borrowing activity.
+         * 2. 'libraryName', 'memberCount': MUST be STATIC fields because 'libraryName' is common 
+         *    to all members, and 'memberCount' keeps a shared tally of total admissions.
+         */
+        private String name;
+        private String memberId;
+        private int booksIssued;
+
+        private static String libraryName = "Central Library";
+        private static int memberCount = 0;
+
+        public FixedLibraryMember(String name, int booksIssued) {
+            this.name = name;
+            this.booksIssued = booksIssued;
+            memberCount++;
+            this.memberId = "LM-" + (1000 + memberCount); // Auto-generate ID sequentially
+        }
+
+        public void printMemberCard() {
+            System.out.println(name + " | " + memberId);
+        }
+
+        public static void printTotalMembers() {
+            System.out.println("Total members: " + memberCount);
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println("=== Broken Version Output ===");
+        BrokenLibraryMember member1 = new BrokenLibraryMember("Aditi", "LM-1001", 2);
+        BrokenLibraryMember member2 = new BrokenLibraryMember("Rohan", "LM-1002", 1);
+
+        // Prints "Rohan" twice because static fields are shared class-wide and got overwritten!
+        member1.printName();
+        member2.printName();
+
+        System.out.println("\n=== Fixed Version Output ===");
+        FixedLibraryMember fixedMember1 = new FixedLibraryMember("Aditi", 2);
+        FixedLibraryMember fixedMember2 = new FixedLibraryMember("Rohan", 1);
+
+        fixedMember1.printMemberCard();
+        fixedMember2.printMemberCard();
+        FixedLibraryMember.printTotalMembers();
+    }
+}

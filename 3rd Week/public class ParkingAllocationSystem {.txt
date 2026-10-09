@@ -1,0 +1,76 @@
+public class ParkingAllocationSystem {
+
+    static class ParkingSlot {
+        private String slotNo;
+        private int capacity;
+        private int occupiedCount;
+
+        public ParkingSlot(String slotNo, int capacity, int occupiedCount) {
+            this.slotNo = slotNo;
+            this.capacity = capacity;
+            this.occupiedCount = occupiedCount;
+        }
+
+        public boolean allot(String vehicleNo) {
+            if (occupiedCount < capacity) {
+                occupiedCount++;
+                System.out.println(vehicleNo + " allotted to slot " + slotNo);
+                return true;
+            }
+            return false;
+        }
+
+        public boolean isFull() {
+            return occupiedCount >= capacity;
+        }
+
+        public String getSlotNo() {
+            return slotNo;
+        }
+    }
+
+    public static ParkingSlot findAvailableSlot(ParkingSlot[] slots) {
+        if (slots == null) return null;
+        for (ParkingSlot slot : slots) {
+            if (slot != null && !slot.isFull()) {
+                return slot; // Returns the direct reference to the available slot object
+            }
+        }
+        return null; // Null returned when no slot has capacity
+    }
+
+    public static void safeAllot(ParkingSlot[] slots, String vehicleNo) {
+        ParkingSlot availableSlot = findAvailableSlot(slots);
+        
+        // Null safety check prevents NullPointerException
+        if (availableSlot != null) {
+            availableSlot.allot(vehicleNo);
+        } else {
+            System.out.println("No slots available for " + vehicleNo);
+        }
+    }
+
+    /*
+     * EXPLANATION ON REFERENCE PASSING:
+     * In Java, objects and arrays are passed by reference value. Passing 'ParkingSlot[] slots'
+     * passes copies of the memory references pointing to the array and slot objects, NOT copies 
+     * of the underlying ParkingSlot instances. Therefore, calling 'availableSlot.allot()' 
+     * mutates the actual slot object residing in heap memory.
+     */
+
+    public static void main(String[] args) {
+        System.out.println("--- Test Case 1: Available slot exists ---");
+        ParkingSlot[] slots1 = new ParkingSlot[] {
+            new ParkingSlot("A1", 4, 3),
+            new ParkingSlot("A2", 5, 5)
+        };
+        safeAllot(slots1, "TN09AB1234");
+
+        System.out.println("\n--- Test Case 2: All slots full ---");
+        ParkingSlot[] slots2 = new ParkingSlot[] {
+            new ParkingSlot("A1", 4, 4),
+            new ParkingSlot("A2", 5, 5)
+        };
+        safeAllot(slots2, "TN09AB1234");
+    }
+}

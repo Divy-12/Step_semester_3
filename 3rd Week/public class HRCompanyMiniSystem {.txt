@@ -1,0 +1,119 @@
+public class HRCompanyMiniSystem {
+
+    // Reused Employee base class
+    static class Employee {
+        private String empId;
+        private String empName;
+        private double salary;
+
+        public Employee(String empId, String empName, double salary) {
+            this.empId = empId;
+            this.empName = empName;
+            this.salary = salary;
+        }
+
+        public double getSalary() {
+            return salary;
+        }
+
+        public double getEffectivePay() {
+            return getSalary();
+        }
+    }
+
+    // Reused ManagerEmployee class
+    static class ManagerEmployee extends Employee {
+        private double teamBonus;
+
+        public ManagerEmployee(String empId, String empName, double salary, double teamBonus) {
+            super(empId, empName, salary);
+            this.teamBonus = teamBonus;
+        }
+
+        @Override
+        public double getEffectivePay() {
+            return getSalary() + teamBonus;
+        }
+    }
+
+    // Reused ParkingSlot class
+    static class ParkingSlot {
+        private String slotNo;
+        private int capacity;
+        private int occupiedCount;
+
+        public ParkingSlot(String slotNo, int capacity, int occupiedCount) {
+            this.slotNo = slotNo;
+            this.capacity = capacity;
+            this.occupiedCount = occupiedCount;
+        }
+
+        public boolean allot() {
+            if (occupiedCount < capacity) {
+                occupiedCount++;
+                return true;
+            }
+            return false;
+        }
+
+        public String getSlotNo() {
+            return slotNo;
+        }
+    }
+
+    // Composite Record class linking Employee and ParkingSlot
+    static class CompanyEmployeeRecord {
+        private String name;
+        private String empId;
+        private Employee employee; // Polymorphic reference (can hold Employee or ManagerEmployee)
+        private ParkingSlot slot;   // Object reference (Composition)
+
+        public static int totalRecords = 0; // Shared static counter
+
+        public CompanyEmployeeRecord(String name, String empId, Employee employee) {
+            this.name = name;
+            this.empId = empId;
+            this.employee = employee;
+            this.slot = null; // Unallotted by default
+            totalRecords++;
+        }
+
+        public void assignParking(ParkingSlot slot) {
+            if (slot != null && slot.allot()) {
+                this.slot = slot;
+            }
+        }
+
+        // Returns profile status safely handling potential null references
+        public String fullProfile() {
+            double pay = (employee != null) ? employee.getEffectivePay() : 0.0;
+            String slotDisplay = (slot != null) ? slot.getSlotNo() : "no parking assigned";
+            return name + " | Pay: Rs " + pay + " | Slot: " + slotDisplay;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Create parking slots
+        ParkingSlot slotA1 = new ParkingSlot("A1", 4, 3);
+        ParkingSlot slotA2 = new ParkingSlot("A2", 5, 4);
+
+        // Create 3 employee records
+        CompanyEmployeeRecord record1 = new CompanyEmployeeRecord("Divya", "E101", 
+                new ManagerEmployee("E101", "Divya", 70000, 8000));
+        CompanyEmployeeRecord record2 = new CompanyEmployeeRecord("Karan", "E102", 
+                new Employee("E102", "Karan", 40000));
+        CompanyEmployeeRecord record3 = new CompanyEmployeeRecord("Meera", "E103", 
+                new Employee("E103", "Meera", 10000));
+
+        // Allot parking slots to only two employees (leaving the third unallotted)
+        record1.assignParking(slotA1);
+        record2.assignParking(slotA2);
+
+        // Display full profiles
+        System.out.println(record1.fullProfile());
+        System.out.println(record2.fullProfile());
+        System.out.println(record3.fullProfile());
+
+        System.out.println("Total records: " + CompanyEmployeeRecord.totalRecords);
+    }
+}
